@@ -9,18 +9,19 @@ using namespace std;
 typedef unsigned char u8;
 typedef unsigned int u32;
 
-string char_list="!.,;? %#$@";
-set<u8> char_set;
 
 const int msg_num=11;
 
-int is_valid(u8 c)
+long cal_weight(unsigned char c)
 {
-    if(char_set.find(c)==char_set.end())
-        return 0;
-    else return 1;
+    if(c==' ') return 100000;
+    if(c>='a'&&c<='z') return 1000;
+    if(c>='A'&&c<='Z') return 1000;
+    if(c>='0'&&c<='9') return 500;
+    if(c=='.'||c==',') return 100;
+    if(c>127) return -100000;
+    return -1000;
 }
-
 char * binary(unsigned char c)
 {
     static char buf[9];
@@ -34,11 +35,17 @@ char * binary(unsigned char c)
     }
     return buf;
 }
-struct result
+struct result_t
 {
-    int weight;
+    long weight;
+    u8 key;
     u8 c;
+    string all;
 };
+bool cmp(const result_t &a,const result_t &b)
+{
+    return a.weight>b.weight;
+}
 char get_key(vector<string> &vs,int index)
 {
     int cnt0=0;
@@ -51,33 +58,37 @@ char get_key(vector<string> &vs,int index)
         unsigned char c=vs[i][index];
         printf("<%02x:%s>",(u8)(c),binary(c));
     }
+    printf("\n");
     string &target=vs[msg_num-1];
-    for(int i=0;i<char_list.size();i++)
+    vector<result_t> result_list;
+    for(int i=0;i<=255;i++)
     {
-        int weight=0;
-        u8 key=char_list[i]^target[index];
-        for(int j=0;j<msg_num-1;j++)
+        result_t result;
+        long weight=0;
+        u8 key=u8(i);
+        for(int j=0;j<msg_num;j++)
         {
             string & text=vs[j];
-            weight+=is_valid(text[index]^key);
+            weight+=cal_weight(text[index]^key);
+            result.all+=text[index]^key;
         }
-        if(weight>=9)
-        printf("<%c,%d>",char_list[i],weight);
+        result.weight=weight;
+        result.c=target[index]^key;
+        result.key=key;
+        result_list.push_back(result);
+        //if(weight>=0)
+        //printf("<%02x,%ld,%c>",(u32)key,weight,target[index]^key);
     }
+    sort(result_list.begin(),result_list.end(),cmp);
+    for(int i=0;i<result_list.size()&&i<10;i++)
+    {
+        printf("<%c,%02x,%ld,%s>",result_list[i].c,(u32)result_list[i].key,result_list[i].weight,result_list[i].all.c_str());
+    }
+
     printf("\n");
 }
 int main()
 {
-    for(int i=0;i<26;i++)
-    {
-        char_list += 'a' + i;
-        char_list += 'A' + i;
-    }
-    for(int i=0;i<10;i++)
-        char_list += '0'+i;
-    for(int i=0;i<char_list.length();i++)
-        char_set.insert(char_list[i]);
-    printf("<<<%d>>>\n",char_set.size());
     char buf[1000];
     freopen("/home/wangyu/Desktop/1.txt","r",stdin);
     vector<string> vs0;
