@@ -140,11 +140,15 @@ int main()
         vs0.push_back(buf);
     }
     assert(vs0.size()==msg_num);
+    for(int i=0;i<msg_num;i++)
+    {
+        assert(vs0[i].length() % 2 == 0);
+        assert(vs0[i].length()>=vs0[msg_num-1].length());
+    }
     vector<string> vs;
     for(int i=0;i<vs0.size();i++)
     {
         string tmp;
-        assert(vs0[i].size()%2==0);
         for(int j=0;j<vs0[i].length();j+=2)
         {
             char buf2[3];
@@ -158,7 +162,7 @@ int main()
         }
         vs.push_back(tmp);
     }
-    int min_len=vs[10].size();
+    int min_len=vs[msg_num-1].length();
     for(int i=0;i<min_len;i++)
     {
         printf("<%02d:>",i);
