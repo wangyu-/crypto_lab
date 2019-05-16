@@ -11,8 +11,8 @@ typedef unsigned int u32;
 
 
 const int msg_num=11;
-
-long cal_weight(unsigned char c)
+const int top_to_show=20;
+long cal_weight_old(unsigned char c)
 {
     if(c==' ') return 100000;
     if(c>='a'&&c<='z') return 1000;
@@ -21,6 +21,41 @@ long cal_weight(unsigned char c)
     if(c=='.'||c==',') return 100;
     if(c>127) return -100000;
     return -1000;
+}
+int is_print_able(char c)
+{
+    string char_list=",.<>;:{}[]~`!@#$%^&*()-=_+";
+    if(c==' ') return 1;
+    else if(c>='a'&&c<='z') return 1;
+    else if(c>='A'&&c<='Z') return 1;
+    else if(c>='0'&&c<='9') return 1;
+    else if(char_list.find(c)!=string::npos) return 1;
+    return 0;
+}
+
+long cal_weight(string &s)
+{
+    int cnt_space=0;
+    int cnt_low=0;
+    int cnt_up=0;
+    int cnt_digit=0;
+    int cnt_printable=0;
+    int cnt_non_printable=0;
+    int cnt_invaild=0;
+    for(int i=0;i<s.length();i++)
+    {
+        u8 c=s[i];
+        if(c==' ') cnt_space++;
+        else if(c>='a'&&c<='z') cnt_low++;
+        else if(c>='A'&&c<='Z') cnt_up++;
+        else if(c>='0'&&c<='9') cnt_digit++;
+        else if(is_print_able(c)) cnt_printable++;
+        else if(c>127) cnt_invaild++;
+        else cnt_non_printable++;
+    }
+    long weight= cnt_invaild*(-1000)+cnt_space*5+cnt_low*5+cnt_up*5+cnt_digit*(1)+cnt_printable*0 +cnt_non_printable*(-100);
+    //if(cnt_space >msg_num/3) weight-=cnt_space*1000;
+    return weight;
 }
 char * binary(unsigned char c)
 {
@@ -46,6 +81,7 @@ bool cmp(const result_t &a,const result_t &b)
 {
     return a.weight>b.weight;
 }
+vector<string> final_result(top_to_show);
 char get_key(vector<string> &vs,int index)
 {
     int cnt0=0;
@@ -69,20 +105,27 @@ char get_key(vector<string> &vs,int index)
         for(int j=0;j<msg_num;j++)
         {
             string & text=vs[j];
-            weight+=cal_weight(text[index]^key);
+            //weight+=cal_weight(text[index]^key);
             result.all+=text[index]^key;
         }
-        result.weight=weight;
+        result.weight=cal_weight(result.all);
         result.c=target[index]^key;
         result.key=key;
         result_list.push_back(result);
-        //if(weight>=0)
-        //printf("<%02x,%ld,%c>",(u32)key,weight,target[index]^key);
     }
     sort(result_list.begin(),result_list.end(),cmp);
-    for(int i=0;i<result_list.size()&&i<10;i++)
+    for(int i=0;i<result_list.size()&&i<top_to_show;i++)
     {
+        for(int j=0;j<result_list[i].all.length();j++)
+        {
+                if(!is_print_able(result_list[i].all[j])) result_list[i].all[j]='*';
+        }
+
         printf("<%c,%02x,%ld,%s>",result_list[i].c,(u32)result_list[i].key,result_list[i].weight,result_list[i].all.c_str());
+        if(is_print_able(result_list[i].c))
+            final_result[i]+=result_list[i].c;
+        else
+            final_result[i]+='*';
     }
 
     printf("\n");
@@ -121,6 +164,11 @@ int main()
         printf("<%02d:>",i);
         get_key(vs,i);
     }
+    printf("\n");
+    printf("01234567890123456789012345678901234567890123456789012345678901234567890123456789012\n");
+    printf("============================top results============================================\n");
+    for(int i=0;i<top_to_show;i++)
+        printf("%s\n",final_result[i].c_str());
 
     return 0;
 }
