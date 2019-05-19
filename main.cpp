@@ -9,7 +9,6 @@ using namespace std;
 typedef unsigned char u8;
 typedef unsigned int u32;
 
-
 const int msg_num=11;
 const int top_to_show=20;
 long cal_weight_old(unsigned char c)
@@ -24,7 +23,7 @@ long cal_weight_old(unsigned char c)
 }
 int is_print_able(char c)
 {
-    string char_list=",.<>;:{}[]~`!@#$%^&*()-=_+";
+    string char_list=",.<>;:{}[]~`!@#$%^&*()-=_+'\"";
     if(c==' ') return 1;
     else if(c>='a'&&c<='z') return 1;
     else if(c>='A'&&c<='Z') return 1;
@@ -121,7 +120,7 @@ char get_key(vector<string> &vs,int index)
                 if(!is_print_able(result_list[i].all[j])) result_list[i].all[j]='*';
         }
 
-        printf("<%c,%02x,%ld,%s>",result_list[i].c,(u32)result_list[i].key,result_list[i].weight,result_list[i].all.c_str());
+        printf("<[%c],k:%02x,w:%ld,%s>",result_list[i].c,(u32)result_list[i].key,result_list[i].weight,result_list[i].all.c_str());
         if(is_print_able(result_list[i].c))
             final_result[i]+=result_list[i].c;
         else
@@ -130,6 +129,7 @@ char get_key(vector<string> &vs,int index)
 
     printf("\n");
 }
+string target_msg_after_correction="The secret message is: When using a stream cipher, never use the key more than once";
 int main()
 {
     char buf[1000];
@@ -173,6 +173,33 @@ int main()
     printf("============================top results============================================\n");
     for(int i=0;i<top_to_show;i++)
         printf("%s\n",final_result[i].c_str());
+
+    printf("============================key====================================================\n");
+    string key=target_msg_after_correction;
+    for(int i=0;i<key.length();i++)
+    {
+        key[i]^=vs[msg_num-1][i];
+        printf("%02x",(u32)(u8)key[i]);
+    }
+    printf("\n");
+
+    printf("============================all messages============================================\n");
+    for(int i=0;i<msg_num;i++)
+    {
+        for(int j=0;j<key.length();j++)
+        {
+            vs[i][j]^=key[j];
+            if(!is_print_able(vs[i][j]))
+            {
+                //printf("<%02x>",(u32)(u8)vs[i][j]);
+                //vs[i][j]='*';
+            }
+
+        }
+        vs[i]=vs[i].substr(0,min_len);
+        printf("%s#\n",vs[i].c_str());
+    }
+
 
     return 0;
 }
