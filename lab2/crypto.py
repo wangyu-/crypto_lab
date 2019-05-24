@@ -35,6 +35,6 @@ for i in range(b):
 	#tmp=power(gb,i,p)
 	if dic.has_key(tmp):
 	    print "x0=",i,"  x1=",dic[tmp],"  x=",i*b+dic[tmp]
-	    break
+	    #break
 	gbx0=(gbx0*gb)%p
 
