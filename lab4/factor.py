@@ -19,15 +19,16 @@ def factor(N):
 		if i%10000==0:
 			print i
 		A=S+i;
-		D=A**2-N;
-		if D<0:
+		tmp=A**2-N;
+		if tmp<0:
 			continue;
-		x=find_sqrt(D)
-		if x**2==D:
+		x=find_sqrt(tmp)
+		if x**2==tmp:
 			print "X=",x;
 			print "P=",A-x;
 			print "Q=",A+x;
 			print "P*Q=",A**2-x**2;
+			#print 2*x/find_sqrt(S)
 			return;
 	print "Not found";
 print "=========case 1=========";
